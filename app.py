@@ -7,8 +7,8 @@ from langchain_community.tools import BraveSearch
 import json
 import os
 
-searcher = BraveSearch.from_api_key(api_key='BSAFTC_v4RCsW2pdXa1ji0gac18SNmp', search_kwargs={"count": 3})
-model = ChatGroq(model_name='llama3-70b-8192', api_key='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')
+searcher = BraveSearch.from_api_key(api_key='', search_kwargs={"count": 3})
+model = ChatGroq(model_name='llama3-70b-8192', api_key='')
 
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful AI assistant! Format your responses with headings and bullet points where appropriate."),
