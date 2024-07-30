@@ -1,5 +1,5 @@
 # SarwarGPT
-The name is just my own name and I don't why I added GPT even though it's not even GPT but let's just get into some details that you need to get this up and running.
+The name is just my own name and I don't know why I added GPT even though it's not even GPT but let's just get into some details that you need to get this up and running.
 
 ## Dependencies
 ```bash
