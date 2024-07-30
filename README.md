@@ -23,6 +23,6 @@ Open cmd in the directory containing app.py and index.html and type:
 fastapi dev app.py
 ```
 
-It will deploy the app on localhost:8000
+It will deploy the app on localhost:8000.
 
 
