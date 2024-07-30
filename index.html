@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SarwarGPT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding-top: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #007bff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        #chatbox {
+            width: 60%;
+            height: 60vh;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: white;
+            overflow-y: scroll;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        #inputContainer {
+            width: 60%;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        #inputbox {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            resize: none;
+            overflow: hidden;
+        }
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #007bff;
+        }
+        .icon-button:focus {
+            outline: none;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px 0;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .human {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            display: inline-block;
+        }
+        .ai {
+            background-color: #e9e9eb;
+            align-self: flex-start;
+        }
+        .message h3 {
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 1.2em;
+            color: #007bff;
+        }
+        .message ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        .message li {
+            margin-bottom: 5px;
+        }
+        .message ul ul {
+            list-style-type: circle;
+        }
+    </style>
+</head>
+<body>
+    <h1>SarwarGPT</h1>
+    <div id="chatbox"></div>
+    <div id="inputContainer">
+        <input type="text" id="inputbox" placeholder="Type a message..." autofocus />
+        <button class="icon-button" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <button class="icon-button" onclick="startListening()"><i class="fas fa-microphone"></i></button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+    <script>
+        const inputBox = document.getElementById("inputbox");
+        const chatBox = document.getElementById("chatbox");
+        const ws = new WebSocket("ws://localhost:8000/ws");
+
+        let currentAIMessage = null;
+        let accumulatedText = "";
+
+        ws.onmessage = function(event) {
+            if (!currentAIMessage) {
+                currentAIMessage = document.createElement("div");
+                currentAIMessage.classList.add("message", "ai");
+                chatBox.appendChild(currentAIMessage);
+            }
+            accumulatedText += event.data;
+            currentAIMessage.innerHTML = formatResponse(accumulatedText);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        inputBox.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const message = inputBox.value.trim();
+            if (message) {
+                addMessage("human", message);
+                ws.send(message);
+                inputBox.value = "";
+                currentAIMessage = null;
+                accumulatedText = "";
+            }
+        }
+
+        function addMessage(sender, message) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message", sender);
+            messageElement.innerHTML = message;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function formatResponse(text) {
+            // Format headings
+            text = text.replace(/\*\*(.*?)\*\*/g, '<h3>$1</h3>');
+            
+            // Format primary bullet points
+            text = text.replace(/^\s*\*\s(.+)$/gm, '<li>$1</li>');
+            
+            // Format secondary bullet points
+            text = text.replace(/^\s*\+\s(.+)$/gm, '<li style="list-style-type: circle; margin-left: 20px;">$1</li>');
+            
+            // Wrap consecutive list items in a <ul> tag
+            text = text.replace(/<li>(.+)<\/li>(\s*<li>(.+)<\/li>)+/g, '<ul>$&</ul>');
+            
+            // Replace newlines with <br> tags
+            text = text.replace(/\n/g, '<br>');
+            
+            return text;
+        }
+
+        function startListening() {
+            if (annyang) {
+                annyang.start({ autoRestart: false, continuous: false });
+                annyang.addCallback('result', function(phrases) {
+                    inputBox.value = phrases[0];
+                    inputBox.focus();
+                    annyang.abort();
+                });
+            }
+        }
+
+        if (annyang) {
+            annyang.addCommands({
+                '*text': function(text) {
+                    inputBox.value = text;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
