@@ -150,19 +150,11 @@
         }
 
         function formatResponse(text) {
-            // Format headings
+            
             text = text.replace(/\*\*(.*?)\*\*/g, '<h3>$1</h3>');
-            
-            // Format primary bullet points
             text = text.replace(/^\s*\*\s(.+)$/gm, '<li>$1</li>');
-            
-            // Format secondary bullet points
             text = text.replace(/^\s*\+\s(.+)$/gm, '<li style="list-style-type: circle; margin-left: 20px;">$1</li>');
-            
-            // Wrap consecutive list items in a <ul> tag
             text = text.replace(/<li>(.+)<\/li>(\s*<li>(.+)<\/li>)+/g, '<ul>$&</ul>');
-            
-            // Replace newlines with <br> tags
             text = text.replace(/\n/g, '<br>');
             
             return text;
